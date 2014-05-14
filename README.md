@@ -1,5 +1,5 @@
-streamingtwitter
-================
+Go: Twitter Streaming API
+=========================
 
 [![Build Status](https://travis-ci.org/JustAdam/streamingtwitter.svg?branch=master)](https://travis-ci.org/JustAdam/streamingtwitter)
 
