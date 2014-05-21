@@ -39,28 +39,125 @@ type StreamClient struct {
 	Finished chan struct{}
 }
 
-// @todo add all the data defined by https://dev.twitter.com/docs/platform-objects/tweets
-// - https://dev.twitter.com/docs/platform-objects/entities
-// - https://dev.twitter.com/docs/platform-objects/places
 type TwitterStatus struct {
-	Id          string      `json:"id_str"`
-	ReplyTo     string      `json:"in_reply_to_status_id_str"`
-	ReplyToUser string      `json:"in_reply_to_user_id_str"`
-	CreatedAt   TwitterTime `json:"created_at"`
-	Text        string      `json:"text"`
-	User        TwitterUser `json:"User"`
+	Id                    string                 `json:"id_str"`
+	ReplyToStatusIdStr    string                 `json:"in_reply_to_status_id_str"`
+	ReplyToUserIdStr      string                 `json:"in_reply_to_user_id_str"`
+	ReplyToUserScreenName string                 `json:"in_reply_to_screen_name"`
+	CreatedAt             TwitterTime            `json:"created_at"`
+	Text                  string                 `json:"text"`
+	User                  TwitterUser            `json:"User"`
+	Source                string                 `json:"source"`
+	Truncated             bool                   `json:"truncated"`
+	Favorited             bool                   `json:"favorited"`
+	Retweeted             bool                   `json:"retweeted"`
+	RetweetedStatus       map[string]interface{} `json:"retweeted_status"`
+	PossiblySensitive     bool                   `json:"possibly_sensitive"`
+	Language              string                 `json:"lang"`
+	RetweetCount          uint32                 `json:"retweet_count"`
+	FavoriteCount         uint32                 `json:"favorite_count"`
+	Coordinates           TwitterCoordinate      `json:"coordinates"`
+	Place                 TwitterPlace           `json:"place"`
+	Entities              TwitterEntity          `json:"entities"`
 }
 
-// Currently a seperate type for easier unmarshaling help
+// Easier JSON unmarshaling help
 type TwitterTime struct {
 	T time.Time
 }
 
-// @todo: https://dev.twitter.com/docs/platform-objects/users
 type TwitterUser struct {
+	Id                             string      `json:"id_str"`
+	Name                           string      `json:"name"`
+	ScreenName                     string      `json:"screen_name"`
+	CreatedAt                      TwitterTime `json:"created_at"`
+	Location                       string      `json:"location"`
+	Url                            string      `json:"url"`
+	Description                    string      `json:"description"`
+	Protected                      bool        `json:"protected"`
+	FollowersCount                 uint32      `json:"followers_count"`
+	FriendsCount                   uint32      `json:"friends_count"`
+	ListedCount                    uint32      `json:"listed_count"`
+	FavouritesCount                uint32      `json:"favourites_count"`
+	StatusCount                    uint32      `json:"statuses_count"`
+	UtcOffset                      int32       `json:"utc_offset"`
+	Timezone                       string      `json:"time_zone"`
+	GeoEnabled                     bool        `json:"geo_enabled"`
+	Verified                       bool        `json:"verified"`
+	Language                       string      `json:"lang"`
+	ContributorsEnabled            bool        `json:"contributors_enabled"`
+	IsTranslator                   bool        `json:"is_translator"`
+	IsTranslationEnabled           bool        `json:"is_translation_enabled"`
+	FollowRequestSent              bool        `json:"follow_request_sent"`
+	ProfileBackgroundColor         string      `json:"profile_background_color"`
+	ProfileBackgroundImageUrl      string      `json:"profile_background_image_url"`
+	ProfileBackgroundImageUrlHttps string      `json:"profile_background_image_url_https"`
+	ProfileBackgroundTile          bool        `json:"profile_background_tile"`
+	ProfileImageUrl                string      `json:"profile_image_url"`
+	ProfileImageUrlHttps           string      `json:"profile_image_url_https"`
+	ProfileLinkColor               string      `json:"profile_link_color"`
+	ProfileSidebarBorderColor      string      `json:"profile_sidebar_border_color"`
+	ProfileSidebarFillColor        string      `json:"profile_sidebar_fill_color"`
+	ProfileTextColor               string      `json:"profile_text_color"`
+	ProfileUseBackgroundImage      bool        `json:"profile_use_background_image"`
+	DefaultProfile                 bool        `json:"default_profile"`
+	DefaultProfileImage            bool        `json:"default_profile_image"`
+}
+
+type TwitterCoordinate struct {
+	Type        string        `json:"type"`
+	Coordinates []interface{} `json:"coordinates"`
+}
+
+type TwitterPlace struct {
+	Id              string                 `json:"id"`
+	Url             string                 `json:"url"`
+	PlaceType       string                 `json:"place_type"`
+	Name            string                 `json:"name"`
+	FullName        string                 `json:"full_name"`
+	CountryCode     string                 `json:"country_code"`
+	Country         string                 `json:"country"`
+	BoundingBox     TwitterCoordinate      `json:"bounding_box"`
+	ContainedWithin map[string]interface{} `json:"contained_within"`
+}
+
+type TwitterEntity struct {
+	Hashtags     []TweetHashTag     `json:"hashtags"`
+	Media        []TweetMedia       `json:"media"`
+	Urls         []TweetUrl         `json:"urls"`
+	UserMentions []TweetUserMention `json:"user_mentions"`
+}
+
+type TweetHashTag struct {
+	Text    string `json:"text"`
+	Indices []uint `json:"indices"`
+}
+
+type TweetMedia struct {
+	Id             string                 `json:"id_str"`
+	Type           string                 `json:"type"`
+	Url            string                 `json:"url"`
+	DisplayUrl     string                 `json:"display_url"`
+	ExpandedUrl    string                 `json:"expanded_url"`
+	MediaUrl       string                 `json:"media_url"`
+	MediaUrlHttps  string                 `json:"media_url_https"`
+	Sizes          map[string]interface{} `json:"sizes"` // https://dev.twitter.com/docs/platform-objects/entities#obj-sizes
+	Indices        []uint                 `json:"indices"`
+	SourceStatusId string                 `json:"source_id_status_str"`
+}
+
+type TweetUrl struct {
+	Url         string `json:"url"`
+	DisplayUrl  string `json:"display_url"`
+	ExpandedUrl string `json:"expanded_url"`
+	Indices     []uint `json:"indices"`
+}
+
+type TweetUserMention struct {
 	Id         string `json:"id_str"`
 	Name       string `json:"name"`
 	ScreenName string `json:"screen_name"`
+	Indices    []uint `json:"indices"`
 }
 
 func NewClient() (client *StreamClient) {
@@ -105,8 +202,7 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 	}
 	s.oauthClient.Credentials = *app
 
-	// Check for token information from the user (they need to grant your app access
-	// for feed access)
+	// Check for token information from the user (they need to grant your app access for feed access)
 	token, ok := credentials["User"]
 	if ok != true {
 
