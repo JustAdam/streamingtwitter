@@ -4,7 +4,7 @@ package streamingtwitter
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -16,13 +16,14 @@ type JsonTestData struct {
 
 func GetTweetData(t *testing.T) (status *TwitterStatus, testData []JsonTestData) {
 
-	status = new(TwitterStatus)
-	cf, err := ioutil.ReadFile("test_data/tweet.json")
+	cf, err := os.Open("test_data/tweet.json")
 	if err != nil {
 		t.Fatal("Unable to open test data file")
 	}
 
-	if err := json.Unmarshal(cf, &status); err != nil {
+	decoder := json.NewDecoder(cf)
+	status = new(TwitterStatus)
+	if err := decoder.Decode(&status); err != nil {
 		t.Errorf("Unmarshaing into TwitterStatus failed, %v", err)
 	}
 
