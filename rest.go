@@ -5,6 +5,34 @@
 // See https://dev.twitter.com/docs/api/streaming for more information.
 package streamingtwitter
 
-// need access to https://dev.twitter.com/docs/api/1.1/get/users/lookup
+import (
+	"encoding/json"
+	"net/url"
+)
 
-//https://dev.twitter.com/docs/api/1.1
+// Send REST request to Twitter's REST API:  https://dev.twitter.com/docs/api/1.1
+//
+// args := &url.Values{}
+// args.Add("screen_name", "TwitterName")
+// data := []TwitterUser{}
+// url := &TwitterStream{
+//  AccessMethod: "get",
+//  Url:          "https://api.twitter.com/1.1/users/lookup.json",
+// }
+// client.Rest(url, args, &data)
+func (s *StreamClient) Rest(stream *TwitterStream, formValues *url.Values, data interface{}) {
+	resp, err := s.sendRequest(stream, formValues)
+	if err != nil {
+		s.Errors <- err
+		return
+	}
+	defer func() {
+		resp.Body.Close()
+	}()
+
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		s.Errors <- err
+		return
+	}
+}

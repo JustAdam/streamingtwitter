@@ -241,9 +241,8 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 	return nil
 }
 
-// Create new Twitter stream
-func (s *StreamClient) Stream(stream TwitterStream, formValues *url.Values) {
-
+// Calling method is responsible for closing the connection.
+func (s *StreamClient) sendRequest(stream *TwitterStream, formValues *url.Values) (*http.Response, error) {
 	var method func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error)
 	if stream.AccessMethod == "post" {
 		method = s.oauthClient.Post
@@ -252,6 +251,49 @@ func (s *StreamClient) Stream(stream TwitterStream, formValues *url.Values) {
 	}
 	resp, err := method(http.DefaultClient, s.token, stream.Url, *formValues)
 	if err != nil {
+		return nil, err
+	}
+
+	// https://dev.twitter.com/docs/streaming-api-response-codes
+	switch resp.StatusCode {
+	case 401:
+		// Delete User entry in tokens json file?
+		return nil, errors.New("Incorrect usename or password.")
+	case 403:
+		return nil, errors.New("Access to resource is forbidden")
+	case 404:
+		return nil, errors.New("Resource does not exist.")
+	case 406:
+		return nil, errors.New("One or more required parameters are missing or are not suitable (see relevant stream API for more information).")
+	case 413:
+		return nil, errors.New("A parameter list is too long (contact Twitter for increased access).")
+	case 416:
+		return nil, errors.New("Range unacceptable.")
+	case 420:
+		return nil, errors.New("Rate limited.")
+	default:
+		return resp, nil
+	}
+}
+
+// Create new Twitter stream.
+//
+// args := &url.Values{}
+// args.Add("track", "Norway")
+// go client.Stream(streamingtwitter.Streams["Filter"], args)
+// for {
+// 	select {
+//		case status := <-client.Tweets:
+//			fmt.Println(status)
+//		case err := <-client.Errors:
+//			fmt.Printf("ERROR: '%s'\n", err)
+// 		case <-client.Finished:
+//			return
+//		}
+//	}
+func (s *StreamClient) Stream(stream *TwitterStream, formValues *url.Values) {
+	resp, err := s.sendRequest(stream, formValues)
+	if err != nil {
 		s.Errors <- err
 		return
 	}
@@ -259,32 +301,6 @@ func (s *StreamClient) Stream(stream TwitterStream, formValues *url.Values) {
 		resp.Body.Close()
 		s.Finished <- struct{}{}
 	}()
-
-	// https://dev.twitter.com/docs/streaming-api-response-codes
-	switch resp.StatusCode {
-	case 401:
-		s.Errors <- errors.New("Incorrect usename or password.")
-		// Delete User entry in tokens json file?
-		return
-	case 403:
-		s.Errors <- errors.New("Access to resource is forbidden")
-		return
-	case 404:
-		s.Errors <- errors.New("Resource does not exist.")
-		return
-	case 406:
-		s.Errors <- errors.New("One or more required parameters are missing or are not suitable (see relevant stream API for more information).")
-		return
-	case 413:
-		s.Errors <- errors.New("A parameter list is too long (contact Twitter for increased access).")
-		return
-	case 416:
-		s.Errors <- errors.New("Range unacceptable.")
-		return
-	case 420:
-		s.Errors <- errors.New("Rate limited.")
-		return
-	}
 
 	decoder := json.NewDecoder(resp.Body)
 	for {
