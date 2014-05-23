@@ -19,7 +19,7 @@ import (
 //  AccessMethod: "get",
 //  Url:          "https://api.twitter.com/1.1/users/lookup.json",
 // }
-// client.Rest(url, args, &data)
+// go client.Rest(url, args, &data)
 func (s *StreamClient) Rest(stream *TwitterStream, formValues *url.Values, data interface{}) {
 	resp, err := s.sendRequest(stream, formValues)
 	if err != nil {
@@ -28,6 +28,7 @@ func (s *StreamClient) Rest(stream *TwitterStream, formValues *url.Values, data 
 	}
 	defer func() {
 		resp.Body.Close()
+		s.Finished <- struct{}{}
 	}()
 
 	err = json.NewDecoder(resp.Body).Decode(&data)
