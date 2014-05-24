@@ -32,12 +32,20 @@ type StreamClient struct {
 	oauthClient *oauth.Client
 	token       *oauth.Credentials
 
-	// Tweets from received from every open stream will be sent here
+	// Tweets received from every open stream will be sent here
 	Tweets chan *TwitterStatus
 	// Any received errors are sent here (Embedded API errors are current not fully supported)
 	Errors chan error
-	// When a Stream call has finished, this channel will receive data
+	// When a call has finished, this channel will receive data
 	Finished chan struct{}
+}
+
+type TwitterApiUrl struct {
+	// HTTP method which should be used to access the method
+	AccessMethod string
+	Url          string
+	// API type being accessed (stream or rest)
+	Type string
 }
 
 type TwitterStatus struct {
@@ -243,7 +251,7 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 }
 
 // Calling method is responsible for closing the connection.
-func (s *StreamClient) sendRequest(stream *TwitterStream, formValues *url.Values) (*http.Response, error) {
+func (s *StreamClient) sendRequest(stream *TwitterApiUrl, formValues *url.Values) (*http.Response, error) {
 	var method func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error)
 	if stream.AccessMethod == "post" {
 		method = s.oauthClient.Post

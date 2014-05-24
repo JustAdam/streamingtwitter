@@ -15,7 +15,7 @@ import (
 // args := &url.Values{}
 // args.Add("screen_name", "TwitterName")
 // data := []TwitterUser{}
-// url := &TwitterStream{
+// url := &TwitterApiUrl{
 //  AccessMethod: "get",
 //  Url:          "https://api.twitter.com/1.1/users/lookup.json",
 // }
@@ -26,7 +26,7 @@ import (
 // case <-client.Finished:
 //	fmt.Printf("%+v", data)
 // }
-func (s *StreamClient) Rest(stream *TwitterStream, formValues *url.Values, data interface{}) {
+func (s *StreamClient) Rest(stream *TwitterApiUrl, formValues *url.Values, data interface{}) {
 	resp, err := s.sendRequest(stream, formValues)
 	if err != nil {
 		s.Errors <- err

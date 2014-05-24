@@ -12,29 +12,26 @@ import (
 
 var (
 	// Streaming API URLs
-	Streams = make(map[string]*TwitterStream)
+	Streams = make(map[string]*TwitterApiUrl)
 )
-
-type TwitterStream struct {
-	// HTTP method which should be used to access the method
-	AccessMethod string
-	Url          string
-}
 
 // https://dev.twitter.com/docs/api/streaming
 func init() {
 	// Public stream URLs - https://dev.twitter.com/docs/streaming-apis/streams/public
-	Streams["Filter"] = &TwitterStream{
+	Streams["Filter"] = &TwitterApiUrl{
 		AccessMethod: "post",
 		Url:          "https://stream.twitter.com/1.1/statuses/filter.json",
+		Type:         "stream",
 	}
-	Streams["Firehose"] = &TwitterStream{
+	Streams["Firehose"] = &TwitterApiUrl{
 		AccessMethod: "get",
 		Url:          "https://stream.twitter.com/1.1/statuses/firehose.json",
+		Type:         "stream",
 	}
-	Streams["Sample"] = &TwitterStream{
+	Streams["Sample"] = &TwitterApiUrl{
 		AccessMethod: "get",
 		Url:          "https://stream.twitter.com/1.1/statuses/sample.json",
+		Type:         "stream",
 	}
 }
 
@@ -53,7 +50,7 @@ func init() {
 //			return
 //		}
 //	}
-func (s *StreamClient) Stream(stream *TwitterStream, formValues *url.Values) {
+func (s *StreamClient) Stream(stream *TwitterApiUrl, formValues *url.Values) {
 	resp, err := s.sendRequest(stream, formValues)
 	if err != nil {
 		s.Errors <- err
