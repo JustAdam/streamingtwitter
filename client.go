@@ -48,6 +48,11 @@ type TwitterApiUrl struct {
 	Type string
 }
 
+type TwitterError struct {
+	Id  int
+	Msg string
+}
+
 type TwitterStatus struct {
 	Id                    string                 `json:"id_str"`
 	ReplyToStatusIdStr    string                 `json:"in_reply_to_status_id_str"`
@@ -267,19 +272,40 @@ func (s *StreamClient) sendRequest(stream *TwitterApiUrl, formValues *url.Values
 	switch resp.StatusCode {
 	case 401:
 		// Delete User entry in tokens json file?
-		return nil, errors.New("Incorrect usename or password.")
+		return nil, &TwitterError{
+			Id:  resp.StatusCode,
+			Msg: "Incorrect usename or password.",
+		}
 	case 403:
-		return nil, errors.New("Access to resource is forbidden")
+		return nil, &TwitterError{
+			Id:  resp.StatusCode,
+			Msg: "Access to resource is forbidden",
+		}
 	case 404:
-		return nil, errors.New("Resource does not exist.")
+		return nil, &TwitterError{
+			Id:  resp.StatusCode,
+			Msg: "Resource does not exist.",
+		}
 	case 406:
-		return nil, errors.New("One or more required parameters are missing or are not suitable (see relevant stream API for more information).")
+		return nil, &TwitterError{
+			Id:  resp.StatusCode,
+			Msg: "One or more required parameters are missing or are not suitable (see relevant stream API for more information).",
+		}
 	case 413:
-		return nil, errors.New("A parameter list is too long (contact Twitter for increased access).")
+		return nil, &TwitterError{
+			Id:  resp.StatusCode,
+			Msg: "A parameter list is too long (contact Twitter for increased access).",
+		}
 	case 416:
-		return nil, errors.New("Range unacceptable.")
+		return nil, &TwitterError{
+			Id:  resp.StatusCode,
+			Msg: "Range unacceptable.",
+		}
 	case 420:
-		return nil, errors.New("Rate limited.")
+		return nil, &TwitterError{
+			Id:  resp.StatusCode,
+			Msg: "Rate limited.",
+		}
 	default:
 		return resp, nil
 	}
@@ -289,4 +315,8 @@ func (tt *TwitterTime) UnmarshalJSON(b []byte) (err error) {
 	// Remove start and end quotes
 	tt.T, err = time.Parse(twitter_time_layout, string(b[1:len(b)-1]))
 	return
+}
+
+func (e TwitterError) Error() string {
+	return fmt.Sprintf("%d: %s", e.Id, e.Msg)
 }
