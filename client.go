@@ -318,5 +318,5 @@ func (tt *TwitterTime) UnmarshalJSON(b []byte) (err error) {
 }
 
 func (e TwitterError) Error() string {
-	return fmt.Sprintf("%d: %s", e.Id, e.Msg)
+	return fmt.Sprintf("%s (%d)", e.Msg, e.Id)
 }
