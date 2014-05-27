@@ -212,8 +212,7 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 
 	app, ok := credentials["App"]
 	if ok != true {
-		err = errors.New("Missing App token")
-		return err
+		return errors.New("Missing App token")
 	}
 	s.oauthClient.Credentials = *app
 	if s.oauthClient.Credentials.Token == "" || s.oauthClient.Credentials.Secret == "" {
