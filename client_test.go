@@ -26,6 +26,16 @@ func TestAuthenticateMissingAppTokenSecretError(t *testing.T) {
 	}
 }
 
+func TestAuthenticateAccessTokenIsSetInFile(t *testing.T) {
+	client := NewClient()
+
+	file := "test_data/tokens_full.json"
+	client.Authenticate(&file)
+	if client.token.Token != "user-token" || client.token.Secret != "user-secret" {
+		t.Errorf("Client access token not set.")
+	}
+}
+
 func TestTwitterErrorOutput(t *testing.T) {
 	err := &TwitterError{
 		Id:  101,
