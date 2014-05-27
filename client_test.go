@@ -6,13 +6,23 @@ import (
 	"testing"
 )
 
-func TestAuthenticateMissingTokenDataError(t *testing.T) {
+func TestAuthenticateMissingAppDataError(t *testing.T) {
 	client := NewClient()
 
 	file := "test_data/tokens.json"
 	err := client.Authenticate(&file)
 	if err.Error() != "Missing App token" {
 		t.Errorf("Expecting error \"Missing App token\", got %v", err)
+	}
+}
+
+func TestAuthenticateMissingAppTokenSecretError(t *testing.T) {
+	client := NewClient()
+
+	file := "test_data/tokens_empty.json"
+	err := client.Authenticate(&file)
+	if err.Error() != "Missing app's Token or Secret" {
+		t.Errorf("Expecting error \"Missing app's Token or Secret\", got %v", err)
 	}
 }
 

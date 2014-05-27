@@ -215,6 +215,9 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 		err = errors.New("Missing App token")
 		return err
 	}
+	if s.oauthClient.Credentials.Token == "" || s.oauthClient.Credentials.Secret == "" {
+		return errors.New("Missing app's Token or Secret")
+	}
 	s.oauthClient.Credentials = *app
 
 	// Check for token information from the user (they need to grant your app access for feed access)
