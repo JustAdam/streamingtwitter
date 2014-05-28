@@ -41,9 +41,10 @@ type StreamClient struct {
 }
 
 type TwitterApiUrl struct {
-	// HTTP method which should be used to access the method
-	AccessMethod string
-	Url          string
+	// HTTP method which should be used to access the method (currently only get & post is supported)
+	AccessMethod  string
+	CustomHandler func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error)
+	Url           string
 	// API type being accessed (stream or rest)
 	Type string
 }
@@ -260,11 +261,16 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 // Calling method is responsible for closing the connection.
 func (s *StreamClient) sendRequest(stream *TwitterApiUrl, formValues *url.Values) (*http.Response, error) {
 	var method func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error)
-	if stream.AccessMethod == "post" {
-		method = s.oauthClient.Post
+	if stream.AccessMethod == "custom" {
+		method = stream.CustomHandler
 	} else {
-		method = s.oauthClient.Get
+		if stream.AccessMethod == "post" {
+			method = s.oauthClient.Post
+		} else {
+			method = s.oauthClient.Get
+		}
 	}
+
 	resp, err := method(http.DefaultClient, s.token, stream.Url, *formValues)
 	if err != nil {
 		return nil, err
