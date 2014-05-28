@@ -10,4 +10,5 @@ install:
 script:
   - go get -d -v ./... && go build -v ./...
   - go test -covermode=count -coverprofile=profile.cov
+after_success:
   - goveralls -coverprofile=profile.cov -service=travis-ci
