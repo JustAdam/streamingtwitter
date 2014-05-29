@@ -74,7 +74,7 @@ func (s *StreamClient) Stream(stream *TwitterApiUrl, formValues *url.Values) {
 			//if err.Error() == "Unexpected EOF" {
 			//	return
 			//}
-			break
+			continue
 		}
 
 		// Do we need to know which stream the tweet came from?
