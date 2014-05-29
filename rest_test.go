@@ -4,7 +4,6 @@ package streamingtwitter
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"github.com/garyburd/go-oauth/oauth"
 	"io"
@@ -16,27 +15,39 @@ import (
 	"time"
 )
 
-func GetUserLookupData(t *testing.T) (testData []JsonTestData) {
-	cf, err := os.Open("test_data/user_lookup.json")
-	if err != nil {
-		t.Fatal("Unable to open test data file")
+func TestUserLookupJsonDecode(t *testing.T) {
+	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
+		cf, err := os.Open("test_data/user_lookup.json")
+		if err != nil {
+			t.Fatal("Unable to open test data file")
+		}
+		resp := &http.Response{
+			Body: cf,
+		}
+		return resp, nil
 	}
 
+	testurl := &TwitterApiUrl{
+		AccessMethod:  "custom",
+		CustomHandler: handler,
+	}
+
+	client := NewClient()
 	data := []TwitterUser{}
-	err = json.NewDecoder(cf).Decode(&data)
-	if err != nil {
-		t.Errorf("Decoding into []TwitterUser failed, %v", err)
+	go client.Rest(testurl, &url.Values{}, &data)
+
+	select {
+	case <-client.Finished:
+		break
+	case <-time.After(2 * time.Millisecond):
+		t.Fatal("Data not received on Finished channel")
 	}
 
-	testData = []JsonTestData{
+	testData := []JsonTestData{
 		{"Id", data[0].Id, "89409855"},
 		{"Id", data[1].Id, "15439395"},
 	}
-	return
-}
 
-func TestUserLookupJsonDecode(t *testing.T) {
-	testData := GetUserLookupData(t)
 	for _, d := range testData {
 		if d.v != d.e {
 			t.Errorf("%v: expecting %v, got %v", d.n, d.e, d.v)
