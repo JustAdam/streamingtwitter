@@ -3,9 +3,12 @@
 package streamingtwitter
 
 import (
-	"encoding/json"
+	"github.com/garyburd/go-oauth/oauth"
+	"net/http"
+	"net/url"
 	"os"
 	"testing"
+	"time"
 )
 
 type JsonTestData struct {
@@ -14,20 +17,34 @@ type JsonTestData struct {
 	e interface{} // Expected
 }
 
-func GetTweetData(t *testing.T) (status *TwitterStatus, testData []JsonTestData) {
-
-	cf, err := os.Open("test_data/tweet.json")
-	if err != nil {
-		t.Fatal("Unable to open test data file")
+func TestTweetCreation(t *testing.T) {
+	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
+		cf, err := os.Open("test_data/tweet.json")
+		if err != nil {
+			t.Fatal("Unable to open test data file")
+		}
+		resp := &http.Response{
+			Body: cf,
+		}
+		return resp, nil
 	}
 
-	decoder := json.NewDecoder(cf)
-	status = new(TwitterStatus)
-	if err := decoder.Decode(&status); err != nil {
-		t.Errorf("Unmarshaing into TwitterStatus failed, %v", err)
+	testurl := &TwitterApiUrl{
+		AccessMethod:  "custom",
+		CustomHandler: handler,
 	}
 
-	testData = []JsonTestData{
+	client := NewClient()
+	status := new(TwitterStatus)
+	go client.Stream(testurl, &url.Values{})
+	select {
+	case status = <-client.Tweets:
+		break
+	case <-time.After(2 * time.Millisecond):
+		t.Fatal("Tweet data not receieve on Tweets channel")
+	}
+
+	testData := []JsonTestData{
 		{"Id", status.Id, "468728009768579073"},
 		{"ReplyToStatusIdStr", status.ReplyToStatusIdStr, ""},
 		{"ReplyToUserIdStr", status.ReplyToUserIdStr, ""},
@@ -125,11 +142,7 @@ func GetTweetData(t *testing.T) (status *TwitterStatus, testData []JsonTestData)
 		{"Entities.UserMentions[0].Indices", status.Entities.UserMentions[0].Indices[0], uint(3)},
 		{"Entities.UserMentions[0].Indices", status.Entities.UserMentions[0].Indices[1], uint(13)},
 	}
-	return
-}
 
-func TestTweetCreation(t *testing.T) {
-	_, testData := GetTweetData(t)
 	for _, d := range testData {
 		if d.v != d.e {
 			t.Errorf("%v: expecting %v, got %v", d.n, d.e, d.v)
