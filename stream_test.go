@@ -3,6 +3,7 @@
 package streamingtwitter
 
 import (
+	"bytes"
 	"github.com/garyburd/go-oauth/oauth"
 	"net/http"
 	"net/url"
@@ -162,5 +163,46 @@ func TestDefaultStreamVariablesExist(t *testing.T) {
 	_, ok = Streams["Sample"]
 	if ok != true {
 		t.Error("Missing default stream: Sample")
+	}
+}
+
+func TestStreamEOFClosesResp(t *testing.T) {
+	closedChannel := make(chan struct{})
+	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
+		resp := &http.Response{
+			Body: CloseCalled{
+				bytes.NewBufferString("{\"x\": 1}"),
+				closedChannel,
+			},
+		}
+		return resp, nil
+	}
+
+	testurl := &TwitterApiUrl{
+		AccessMethod:  "custom",
+		CustomHandler: handler,
+	}
+
+	client := NewClient()
+	go client.Stream(testurl, &url.Values{})
+	timeout := time.After(5 * time.Millisecond)
+	errors := 0
+	for {
+		select {
+		// Receive tweet
+		case <-client.Tweets:
+			// Receive EOF
+		case <-client.Errors:
+			errors++
+			if errors > 1 {
+				t.Error("Stream was not closed after receiving EOF")
+				return
+			}
+		case <-closedChannel:
+			return
+		case <-timeout:
+			t.Error("Resp.body was not closed")
+			return
+		}
 	}
 }
