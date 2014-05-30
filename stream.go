@@ -71,9 +71,9 @@ func (s *StreamClient) Stream(stream *TwitterApiUrl, formValues *url.Values) {
 		status := new(TwitterStatus)
 		if err := decoder.Decode(&status); err != nil {
 			s.Errors <- err
-			//if err.Error() == "Unexpected EOF" {
-			//	return
-			//}
+			if err.Error() == "EOF" {
+				return
+			}
 			continue
 		}
 
