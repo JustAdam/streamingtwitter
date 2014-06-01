@@ -77,7 +77,6 @@ func TestRestSendsRequestError(t *testing.T) {
 	case <-time.After(2 * time.Millisecond):
 		t.Error("Error not received on Errors channel")
 	}
-
 }
 
 // Decoding error
