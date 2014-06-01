@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/garyburd/go-oauth/oauth"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -229,4 +230,39 @@ func TestStreamEOFClosesResp(t *testing.T) {
 			return
 		}
 	}
+}
+
+func TestDecodingErrorContinues(t *testing.T) {
+	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
+		resp := &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString("{\"id_str\":\"1\",\"text\":\"text\",\"source\":\"text\"}\n\n{\"id_str\":\"1.1\",\"text\":234}\n\n{\"id_str\":\"2\",\"text\":\"text\"}\n\n")),
+		}
+		return resp, nil
+	}
+
+	testurl := &TwitterApiUrl{
+		AccessMethod:  "custom",
+		CustomHandler: handler,
+	}
+
+	client := NewClient()
+	go client.Stream(testurl, &url.Values{})
+	timeout := time.After(5 * time.Millisecond)
+	tweets := 0
+	for {
+		select {
+		case <-client.Tweets:
+			tweets++
+		case <-client.Errors:
+		case <-client.Finished:
+			if tweets != 2 {
+				t.Error("Decoding error did not continue")
+			}
+			return
+		case <-timeout:
+			t.Error("Decoding error timeout")
+			return
+		}
+	}
+
 }
