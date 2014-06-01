@@ -4,6 +4,7 @@ package streamingtwitter
 
 import (
 	"bytes"
+	"errors"
 	"github.com/garyburd/go-oauth/oauth"
 	"net/http"
 	"net/url"
@@ -163,6 +164,29 @@ func TestDefaultStreamVariablesExist(t *testing.T) {
 	_, ok = Streams["Sample"]
 	if ok != true {
 		t.Error("Missing default stream: Sample")
+	}
+}
+
+func TestStreamSendsRequestError(t *testing.T) {
+	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
+		return &http.Response{}, errors.New("Test error")
+	}
+
+	testurl := &TwitterApiUrl{
+		AccessMethod:  "custom",
+		CustomHandler: handler,
+	}
+
+	client := NewClient()
+	go client.Stream(testurl, &url.Values{})
+	select {
+	case err := <-client.Errors:
+		if err.Error() != "Test error" {
+			t.Errorf("Expecting error \"Test error\", got %v", err)
+		}
+		break
+	case <-time.After(2 * time.Millisecond):
+		t.Error("Error not received on Errors channel")
 	}
 }
 
