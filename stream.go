@@ -61,14 +61,13 @@ func (s *StreamClient) Stream(stream *TwitterApiUrl, formValues *url.Values) {
 		s.Finished <- struct{}{}
 	}()
 
+	status := new(TwitterStatus)
 	decoder := json.NewDecoder(resp.Body)
 	for {
 		// @todo handle these: https://dev.twitter.com/docs/streaming-apis/messages
 		// @todo Handle stall_warnings if the option is set
-		// @todo Handle errors if missing values are supplied
 		// @todo Handle fragmented JSON, (delimited)
 
-		status := new(TwitterStatus)
 		if err := decoder.Decode(&status); err != nil {
 			s.Errors <- err
 			if err.Error() == "EOF" {

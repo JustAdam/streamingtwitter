@@ -264,5 +264,4 @@ func TestDecodingErrorContinues(t *testing.T) {
 			return
 		}
 	}
-
 }
