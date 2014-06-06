@@ -5,7 +5,7 @@ go:
   - tip
 install:
   - go get code.google.com/p/go.tools/cmd/cover
-  - go get github.com/JustAdam/goveralls
+  - go get github.com/mattn/goveralls
   - export PATH=$PATH:$HOME/gopath/bin/
 script:
   - go get -d -v ./... && go build -v ./...
