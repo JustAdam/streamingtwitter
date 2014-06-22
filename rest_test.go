@@ -27,7 +27,7 @@ func TestUserLookupJsonDecode(t *testing.T) {
 		return resp, nil
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}
@@ -43,9 +43,9 @@ func TestUserLookupJsonDecode(t *testing.T) {
 		t.Fatal("Data not received on Finished channel")
 	}
 
-	testData := []JsonTestData{
-		{"Id", data[0].Id, "89409855"},
-		{"Id", data[1].Id, "15439395"},
+	testData := []JSONTestData{
+		{"ID", data[0].ID, "89409855"},
+		{"ID", data[1].ID, "15439395"},
 	}
 
 	for _, d := range testData {
@@ -58,10 +58,10 @@ func TestUserLookupJsonDecode(t *testing.T) {
 // sendRequest error
 func TestRestSendsRequestError(t *testing.T) {
 	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
-		return &http.Response{}, errors.New("Test error")
+		return &http.Response{}, errors.New("test error")
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}
@@ -70,7 +70,7 @@ func TestRestSendsRequestError(t *testing.T) {
 	go client.Rest(testurl, &url.Values{}, &struct{}{})
 	select {
 	case err := <-client.Errors:
-		if err.Error() != "Test error" {
+		if err.Error() != "test error" {
 			t.Errorf("Expecting error \"Test error\", got %v", err)
 		}
 		break
@@ -88,7 +88,7 @@ func TestRestSendsDecodingError(t *testing.T) {
 		return resp, nil
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}
@@ -114,7 +114,7 @@ func TestRestSendsFinishedNotification(t *testing.T) {
 		return resp, nil
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}
@@ -141,7 +141,7 @@ func TestRestClosesResp(t *testing.T) {
 		return resp, nil
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}

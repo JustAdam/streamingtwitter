@@ -3,6 +3,7 @@
 
 // Package streamingtwitter provides access to Twitter's streaming API.
 // See https://dev.twitter.com/docs/api/streaming for more information.
+
 package streamingtwitter
 
 import (
@@ -11,46 +12,48 @@ import (
 )
 
 var (
-	// Streaming API URLs
-	Streams = make(map[string]*TwitterApiUrl)
+	// Streams is a map of known Twitter Streaming API URLs.
+	/* @todo implement fully */
+	Streams = make(map[string]*TwitterAPIURL)
 )
 
 // https://dev.twitter.com/docs/api/streaming
 func init() {
 	// Public stream URLs - https://dev.twitter.com/docs/streaming-apis/streams/public
-	Streams["Filter"] = &TwitterApiUrl{
+	Streams["Filter"] = &TwitterAPIURL{
 		AccessMethod: "post",
-		Url:          "https://stream.twitter.com/1.1/statuses/filter.json",
+		URL:          "https://stream.twitter.com/1.1/statuses/filter.json",
 		Type:         "stream",
 	}
-	Streams["Firehose"] = &TwitterApiUrl{
+	Streams["Firehose"] = &TwitterAPIURL{
 		AccessMethod: "get",
-		Url:          "https://stream.twitter.com/1.1/statuses/firehose.json",
+		URL:          "https://stream.twitter.com/1.1/statuses/firehose.json",
 		Type:         "stream",
 	}
-	Streams["Sample"] = &TwitterApiUrl{
+	Streams["Sample"] = &TwitterAPIURL{
 		AccessMethod: "get",
-		Url:          "https://stream.twitter.com/1.1/statuses/sample.json",
+		URL:          "https://stream.twitter.com/1.1/statuses/sample.json",
 		Type:         "stream",
 	}
 }
 
-// Create new Twitter stream.
-//
-// args := &url.Values{}
-// args.Add("track", "Norway")
-// go client.Stream(streamingtwitter.Streams["Filter"], args)
-// for {
-// 	select {
-//		case status := <-client.Tweets:
-//			fmt.Println(status)
-//		case err := <-client.Errors:
-//			fmt.Printf("ERROR: '%s'\n", err)
-// 		case <-client.Finished:
-//			return
-//		}
-//	}
-func (s *StreamClient) Stream(stream *TwitterApiUrl, formValues *url.Values) {
+// Stream creates a new Twitter API stream and sends received tweets on channel client.Tweets
+/*
+ args := &url.Values{}
+ args.Add("track", "Norway")
+ go client.Stream(streamingtwitter.Streams["Filter"], args)
+ for {
+ 	select {
+		case status := <-client.Tweets:
+			fmt.Println(status)
+		case err := <-client.Errors:
+			fmt.Printf("ERROR: '%s'\n", err)
+ 		case <-client.Finished:
+			return
+		}
+	}
+*/
+func (s *StreamClient) Stream(stream *TwitterAPIURL, formValues *url.Values) {
 	resp, err := s.sendRequest(stream, formValues)
 	if err != nil {
 		s.Errors <- err

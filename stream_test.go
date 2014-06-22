@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type JsonTestData struct {
+type JSONTestData struct {
 	n string      // Variable name
 	v interface{} // Variable value
 	e interface{} // Expected
@@ -32,7 +32,7 @@ func TestTweetCreation(t *testing.T) {
 		return resp, nil
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}
@@ -47,20 +47,20 @@ func TestTweetCreation(t *testing.T) {
 		t.Fatal("Tweet data not receieve on Tweets channel")
 	}
 
-	testData := []JsonTestData{
-		{"Id", status.Id, "468728009768579073"},
-		{"ReplyToStatusIdStr", status.ReplyToStatusIdStr, ""},
-		{"ReplyToUserIdStr", status.ReplyToUserIdStr, ""},
+	testData := []JSONTestData{
+		{"ID", status.ID, "468728009768579073"},
+		{"ReplyToStatusIDStr", status.ReplyToStatusIDStr, ""},
+		{"ReplyToUserIDStr", status.ReplyToUserIDStr, ""},
 		{"ReplyToUserScreenName", status.ReplyToUserScreenName, ""},
 		{"CreatedAt", status.CreatedAt.T.String(), "2014-05-20 12:20:40 +0000 UTC"},
 		{"Text", status.Text, "RT @IgorjI4J5: https://t.co/WM4MOusVww #RuinAToy Схема башни московского кремля"},
 		// TwitterUser
-		{"User.Id", status.User.Id, "2450810000"},
+		{"User.ID", status.User.ID, "2450810000"},
 		{"User.Name", status.User.Name, "Афанасия Кудряшова"},
 		{"User.ScreenName", status.User.ScreenName, "AfanasiyaI2E"},
 		{"User.CreatedAt", status.User.CreatedAt.T.String(), "2014-04-18 04:12:25 +0000 UTC"},
 		{"User.Location", status.User.Location, ""},
-		{"User.Url", status.User.Url, ""},
+		{"User.URL", status.User.URL, ""},
 		{"User.Description", status.User.Description, ""},
 		{"User.Protected", status.User.Protected, false},
 		{"User.FollowersCount", status.User.FollowersCount, uint32(7)},
@@ -104,8 +104,8 @@ func TestTweetCreation(t *testing.T) {
 		{"Coordinates.Coordinates[0]", status.Coordinates.Coordinates[0], -74.210251},
 		{"Coordinates.Coordinates[1]", status.Coordinates.Coordinates[1], 40.422551},
 		// TwitterPlace
-		{"Place.Id", status.Place.Id, "27485069891a7938"},
-		{"Place.Url", status.Place.Url, "https://api.twitter.com/1.1/geo/id/27485069891a7938.json"},
+		{"Place.ID", status.Place.ID, "27485069891a7938"},
+		{"Place.URL", status.Place.URL, "https://api.twitter.com/1.1/geo/id/27485069891a7938.json"},
 		{"Place.PlaceType", status.Place.PlaceType, "city"},
 		{"Place.Name", status.Place.Name, "New York"},
 		{"Place.FullName", status.Place.FullName, "New York, NY"},
@@ -122,24 +122,24 @@ func TestTweetCreation(t *testing.T) {
 		{"Entities.Hashtags[0].Indices[0]", status.Entities.Hashtags[0].Indices[0], uint(39)},
 		{"Entities.Hashtags[0].Indices[1]", status.Entities.Hashtags[0].Indices[1], uint(48)},
 		// TwitterMedia
-		{"Entities.Media[0].Id", status.Entities.Media[0].Id, "468831177185710081"},
+		{"Entities.Media[0].ID", status.Entities.Media[0].ID, "468831177185710081"},
 		{"Entities.Media[0].Type", status.Entities.Media[0].Type, "photo"},
-		{"Entities.Media[0].Url", status.Entities.Media[0].Url, "http://t.co/Sqk7VYgixB"},
-		{"Entities.Media[0].DisplayUrl", status.Entities.Media[0].DisplayUrl, "pic.twitter.com/Sqk7VYgixB"},
-		{"Entities.Media[0].ExpandedUrl", status.Entities.Media[0].ExpandedUrl, "http://twitter.com/ShawnWiora/status/468831180297887744/photo/1"},
-		{"Entities.Media[0].MediaUrl", status.Entities.Media[0].MediaUrl, "http://pbs.twimg.com/media/BoGfeL_IUAEcnfI.jpg"},
-		{"Entities.Media[0].MediaUrlHttps", status.Entities.Media[0].MediaUrlHttps, "https://pbs.twimg.com/media/BoGfeL_IUAEcnfI.jpg"},
+		{"Entities.Media[0].URL", status.Entities.Media[0].URL, "http://t.co/Sqk7VYgixB"},
+		{"Entities.Media[0].DisplayURL", status.Entities.Media[0].DisplayURL, "pic.twitter.com/Sqk7VYgixB"},
+		{"Entities.Media[0].ExpandedURL", status.Entities.Media[0].ExpandedURL, "http://twitter.com/ShawnWiora/status/468831180297887744/photo/1"},
+		{"Entities.Media[0].MediaURL", status.Entities.Media[0].MediaURL, "http://pbs.twimg.com/media/BoGfeL_IUAEcnfI.jpg"},
+		{"Entities.Media[0].MediaURLHttps", status.Entities.Media[0].MediaURLHttps, "https://pbs.twimg.com/media/BoGfeL_IUAEcnfI.jpg"},
 		{"Entities.Media[0].Sizes[\"medium\"].(map[string]interface{})[\"w\"]", status.Entities.Media[0].Sizes["medium"].(map[string]interface{})["w"], float64(600)},
 		{"Entities.Media[0].Indices", status.Entities.Media[0].Indices[0], uint(113)},
 		{"Entities.Media[0].Indices", status.Entities.Media[0].Indices[1], uint(135)},
 		// TwitterUrl
-		{"Entities.Urls[0].Url", status.Entities.Urls[0].Url, "https://t.co/WM4MOusVww"},
-		{"Entities.Urls[0].DisplayUrl", status.Entities.Urls[0].DisplayUrl, "docs.google.com/document/d/1Uc\u2026"},
-		{"Entities.Urls[0].ExpandedUrl", status.Entities.Urls[0].ExpandedUrl, "https://docs.google.com/document/d/1UcPtaqzHLCpbOlbrOBRAHuWoXsxoc2Ei4hxlNJMR_1I/edit?usp=d"},
-		{"Entities.Urls[0].Indices", status.Entities.Urls[0].Indices[0], uint(15)},
-		{"Entities.Urls[0].Indices", status.Entities.Urls[0].Indices[1], uint(38)},
+		{"Entities.URLs[0].Url", status.Entities.URLs[0].URL, "https://t.co/WM4MOusVww"},
+		{"Entities.URLs[0].DisplayURL", status.Entities.URLs[0].DisplayURL, "docs.google.com/document/d/1Uc\u2026"},
+		{"Entities.URLs[0].ExpandedURL", status.Entities.URLs[0].ExpandedURL, "https://docs.google.com/document/d/1UcPtaqzHLCpbOlbrOBRAHuWoXsxoc2Ei4hxlNJMR_1I/edit?usp=d"},
+		{"Entities.URLs[0].Indices", status.Entities.URLs[0].Indices[0], uint(15)},
+		{"Entities.URLs[0].Indices", status.Entities.URLs[0].Indices[1], uint(38)},
 		// TwitterMention
-		{"Entities.UserMentions[0].Id", status.Entities.UserMentions[0].Id, "2459254292"},
+		{"Entities.UserMentions[0].ID", status.Entities.UserMentions[0].ID, "2459254292"},
 		{"Entities.UserMentions[0].Name", status.Entities.UserMentions[0].Name, "Игорь Савин"},
 		{"Entities.UserMentions[0].ScreenName", status.Entities.UserMentions[0].ScreenName, "IgorjI4J5"},
 		{"Entities.UserMentions[0].Indices", status.Entities.UserMentions[0].Indices[0], uint(3)},
@@ -173,7 +173,7 @@ func TestStreamSendsRequestError(t *testing.T) {
 		return &http.Response{}, errors.New("Test error")
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}
@@ -203,7 +203,7 @@ func TestStreamEOFClosesResp(t *testing.T) {
 		return resp, nil
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}
@@ -240,7 +240,7 @@ func TestDecodingErrorContinues(t *testing.T) {
 		return resp, nil
 	}
 
-	testurl := &TwitterApiUrl{
+	testurl := &TwitterAPIURL{
 		AccessMethod:  "custom",
 		CustomHandler: handler,
 	}

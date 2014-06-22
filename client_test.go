@@ -15,7 +15,7 @@ func TestAuthenticateMissingAppDataError(t *testing.T) {
 
 	file := "test_data/tokens.json"
 	err := client.Authenticate(&file)
-	if err.Error() != "Missing App token" {
+	if err.Error() != "missing App token" {
 		t.Errorf("Expecting error \"Missing App token\", got %v", err)
 	}
 }
@@ -25,7 +25,7 @@ func TestAuthenticateMissingAppTokenSecretError(t *testing.T) {
 
 	file := "test_data/tokens_empty.json"
 	err := client.Authenticate(&file)
-	if err.Error() != "Missing app's Token or Secret" {
+	if err.Error() != "missing app's Token or Secret" {
 		t.Errorf("Expecting error \"Missing app's Token or Secret\", got %v", err)
 	}
 }
@@ -42,12 +42,12 @@ func TestAuthenticateAccessTokenIsSetInFile(t *testing.T) {
 
 func TestTwitterErrorOutput(t *testing.T) {
 	err := &TwitterError{
-		Id:  101,
-		Msg: "Error message",
+		ID:  101,
+		Msg: "error message",
 	}
 
-	if err.Error() != "Error message (101)" {
-		t.Errorf("Expecting \"Error message (101)\", got %v", err)
+	if err.Error() != "error message (101)" {
+		t.Errorf("Expecting \"error message (101)\", got %v", err)
 	}
 }
 
@@ -63,7 +63,7 @@ func TestSendResponseErrorOutput(t *testing.T) {
 			return resp, nil
 		}
 
-		testurl := &TwitterApiUrl{
+		testurl := &TwitterAPIURL{
 			AccessMethod:  "custom",
 			CustomHandler: handler,
 		}
@@ -72,8 +72,8 @@ func TestSendResponseErrorOutput(t *testing.T) {
 
 		if rerr, ok := err.(*TwitterError); !ok {
 			t.Errorf("Expecting TwitterError, got %v", reflect.TypeOf(err))
-		} else if rerr.Id != v {
-			t.Errorf("Expecting error ID %v, got %v", v, rerr.Id)
+		} else if rerr.ID != v {
+			t.Errorf("Expecting error ID %v, got %v", v, rerr.ID)
 		}
 	}
 }

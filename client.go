@@ -24,40 +24,50 @@ var (
 
 const (
 	// Layout of Twitter's timestamp
-	twitter_time_layout = "Mon Jan 02 15:04:05 Z0700 2006"
+	twitterTimeLayout = "Mon Jan 02 15:04:05 Z0700 2006"
 )
 
-// @todo Calling code should know which stream/request finishes or errors
+// StreamClient provides a client to access to the Twitter API.  The client is unusable until
+// it is authenticated with Twitter (call Authenticate()).
 type StreamClient struct {
 	oauthClient *oauth.Client
 	token       *oauth.Credentials
 
-	// Tweets received from every open stream will be sent here
+	/* @todo Calling code should know which stream/request finishes or errors? */
+
+	// Tweets received from any open stream will be sent here.
 	Tweets chan *TwitterStatus
-	// Any received errors are sent here (Embedded API errors are current not fully supported)
+	// Any received errors are sent here (Embedded API errors are currently not fully supported)
 	Errors chan error
-	// When a call has finished, this channel will receive data
+	// When a request has finished, this channel will receive data.
 	Finished chan struct{}
 }
 
-type TwitterApiUrl struct {
-	// HTTP method which should be used to access the method (currently only get & post is supported)
-	AccessMethod  string
+// A TwitterAPIURL provides details on how to access Twitter API URLs.
+type TwitterAPIURL struct {
+	// HTTP method which should be used to access the method (currently only get, post & custom is supported)
+	AccessMethod string
+	// If setting AccessMethod to custom then you must provide your own client handler.  Otherwise all
+	// requests go via the oauthClient.
 	CustomHandler func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error)
-	Url           string
+	// An actual Twitter API resource URL.
+	URL string
 	// API type being accessed (stream or rest)
 	Type string
 }
 
+// A TwitterError will be generated when there is a problem with the request or stream.
+// JSON decoding errors are not changed.
 type TwitterError struct {
-	Id  int
+	ID  int
 	Msg string
 }
 
+// TwitterStatus represents a tweet with all supporting & available information.
 type TwitterStatus struct {
-	Id                    string                 `json:"id_str"`
-	ReplyToStatusIdStr    string                 `json:"in_reply_to_status_id_str"`
-	ReplyToUserIdStr      string                 `json:"in_reply_to_user_id_str"`
+	ID                    string                 `json:"id_str"`
+	ReplyToStatusIDStr    string                 `json:"in_reply_to_status_id_str"`
+	ReplyToUserIDStr      string                 `json:"in_reply_to_user_id_str"`
 	ReplyToUserScreenName string                 `json:"in_reply_to_screen_name"`
 	CreatedAt             TwitterTime            `json:"created_at"`
 	Text                  string                 `json:"text"`
@@ -76,18 +86,19 @@ type TwitterStatus struct {
 	Entities              TwitterEntity          `json:"entities"`
 }
 
-// Easier JSON unmarshaling help
+// TwitterTime provides a timestamp.  It is seperate for easier JSON unmarshaling help.
 type TwitterTime struct {
 	T time.Time
 }
 
+// TwitterUser represents a Twitter user with all supporting & available information.
 type TwitterUser struct {
-	Id                             string                 `json:"id_str"`
+	ID                             string                 `json:"id_str"`
 	Name                           string                 `json:"name"`
 	ScreenName                     string                 `json:"screen_name"`
 	CreatedAt                      TwitterTime            `json:"created_at"`
 	Location                       string                 `json:"location"`
-	Url                            string                 `json:"url"`
+	URL                            string                 `json:"url"`
 	Description                    string                 `json:"description"`
 	Protected                      bool                   `json:"protected"`
 	FollowersCount                 uint32                 `json:"followers_count"`
@@ -120,14 +131,16 @@ type TwitterUser struct {
 	Status                         map[string]interface{} `json:"status"`
 }
 
+// TwitterCoordinate is a Twitter platform object and stores coordinates.
 type TwitterCoordinate struct {
 	Type        string        `json:"type"`
 	Coordinates []interface{} `json:"coordinates"`
 }
 
+// TwitterPlace is a Twitter platform object for places.
 type TwitterPlace struct {
-	Id              string                 `json:"id"`
-	Url             string                 `json:"url"`
+	ID              string                 `json:"id"`
+	URL             string                 `json:"url"`
 	PlaceType       string                 `json:"place_type"`
 	Name            string                 `json:"name"`
 	FullName        string                 `json:"full_name"`
@@ -137,45 +150,51 @@ type TwitterPlace struct {
 	ContainedWithin map[string]interface{} `json:"contained_within"`
 }
 
+// TwitterEntity contains entity information associated to a tweet.
 type TwitterEntity struct {
 	Hashtags     []TweetHashTag     `json:"hashtags"`
 	Media        []TweetMedia       `json:"media"`
-	Urls         []TweetUrl         `json:"urls"`
+	URLs         []TweetURL         `json:"urls"`
 	UserMentions []TweetUserMention `json:"user_mentions"`
 }
 
+// TweetHashTag contains any hashtags that are found within the tweet.
 type TweetHashTag struct {
 	Text    string `json:"text"`
 	Indices []uint `json:"indices"`
 }
 
+// TweetMedia contains any media types that are associated to the tweet.
 type TweetMedia struct {
-	Id             string                 `json:"id_str"`
+	ID             string                 `json:"id_str"`
 	Type           string                 `json:"type"`
-	Url            string                 `json:"url"`
-	DisplayUrl     string                 `json:"display_url"`
-	ExpandedUrl    string                 `json:"expanded_url"`
-	MediaUrl       string                 `json:"media_url"`
-	MediaUrlHttps  string                 `json:"media_url_https"`
+	URL            string                 `json:"url"`
+	DisplayURL     string                 `json:"display_url"`
+	ExpandedURL    string                 `json:"expanded_url"`
+	MediaURL       string                 `json:"media_url"`
+	MediaURLHttps  string                 `json:"media_url_https"`
 	Sizes          map[string]interface{} `json:"sizes"` // https://dev.twitter.com/docs/platform-objects/entities#obj-sizes
 	Indices        []uint                 `json:"indices"`
-	SourceStatusId string                 `json:"source_id_status_str"`
+	SourceStatusID string                 `json:"source_id_status_str"`
 }
 
-type TweetUrl struct {
-	Url         string `json:"url"`
-	DisplayUrl  string `json:"display_url"`
-	ExpandedUrl string `json:"expanded_url"`
+// TweetURL contains any URLs that are found within the tweet.
+type TweetURL struct {
+	URL         string `json:"url"`
+	DisplayURL  string `json:"display_url"`
+	ExpandedURL string `json:"expanded_url"`
 	Indices     []uint `json:"indices"`
 }
 
+// TweetUserMention containis any users who were mentioned within the tweet.
 type TweetUserMention struct {
-	Id         string `json:"id_str"`
+	ID         string `json:"id_str"`
 	Name       string `json:"name"`
 	ScreenName string `json:"screen_name"`
 	Indices    []uint `json:"indices"`
 }
 
+// Create a new StreamClient.
 func NewClient() (client *StreamClient) {
 	client = new(StreamClient)
 	client.oauthClient = &oauth.Client{
@@ -190,16 +209,16 @@ func NewClient() (client *StreamClient) {
 	return
 }
 
-// Authenicate the app and user with Twitter.
+// Authenicate the app, and user with Twitter using the oauth client.
+// Token information  for the app stored in the following JSON format:
+//  {
+//  "App":{
+//    "Token":"YOUR APP TOKEN HERE",
+//    "Secret":"APP SECRET HERE"
+//    }
+//  }
 func (s *StreamClient) Authenticate(tokenFile *string) error {
 
-	// Read in applications's token information. In json format:
-	//  {
-	//  "App":{
-	//    "Token":"YOUR APP TOKEN HERE",
-	//    "Secret":"APP SECRET HERE"
-	//  }
-	//}
 	cf, err := ioutil.ReadFile(*tokenFile)
 	if err != nil {
 		return err
@@ -213,11 +232,11 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 
 	app, ok := credentials["App"]
 	if ok != true {
-		return errors.New("Missing App token")
+		return errors.New("missing App token")
 	}
 	s.oauthClient.Credentials = *app
 	if s.oauthClient.Credentials.Token == "" || s.oauthClient.Credentials.Secret == "" {
-		return errors.New("Missing app's Token or Secret")
+		return errors.New("missing app's Token or Secret")
 	}
 
 	// Check for token information from the user (they need to grant your app access for feed access)
@@ -240,6 +259,7 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 			return err
 		}
 
+		// Save the user's token information
 		credentials["User"] = token
 		save, err := json.Marshal(credentials)
 		if err != nil {
@@ -258,8 +278,9 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 	return nil
 }
 
+// Send a request to Twitter.
 // Calling method is responsible for closing the connection.
-func (s *StreamClient) sendRequest(stream *TwitterApiUrl, formValues *url.Values) (*http.Response, error) {
+func (s *StreamClient) sendRequest(stream *TwitterAPIURL, formValues *url.Values) (*http.Response, error) {
 	var method func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error)
 	if stream.AccessMethod == "custom" {
 		method = stream.CustomHandler
@@ -271,7 +292,7 @@ func (s *StreamClient) sendRequest(stream *TwitterApiUrl, formValues *url.Values
 		}
 	}
 
-	resp, err := method(http.DefaultClient, s.token, stream.Url, *formValues)
+	resp, err := method(http.DefaultClient, s.token, stream.URL, *formValues)
 	if err != nil {
 		return nil, err
 	}
@@ -281,37 +302,37 @@ func (s *StreamClient) sendRequest(stream *TwitterApiUrl, formValues *url.Values
 	case 401:
 		// Delete User entry in tokens json file?
 		return nil, &TwitterError{
-			Id:  resp.StatusCode,
+			ID:  resp.StatusCode,
 			Msg: "Incorrect usename or password.",
 		}
 	case 403:
 		return nil, &TwitterError{
-			Id:  resp.StatusCode,
+			ID:  resp.StatusCode,
 			Msg: "Access to resource is forbidden",
 		}
 	case 404:
 		return nil, &TwitterError{
-			Id:  resp.StatusCode,
+			ID:  resp.StatusCode,
 			Msg: "Resource does not exist.",
 		}
 	case 406:
 		return nil, &TwitterError{
-			Id:  resp.StatusCode,
+			ID:  resp.StatusCode,
 			Msg: "One or more required parameters are missing or are not suitable (see relevant stream API for more information).",
 		}
 	case 413:
 		return nil, &TwitterError{
-			Id:  resp.StatusCode,
+			ID:  resp.StatusCode,
 			Msg: "A parameter list is too long (contact Twitter for increased access).",
 		}
 	case 416:
 		return nil, &TwitterError{
-			Id:  resp.StatusCode,
+			ID:  resp.StatusCode,
 			Msg: "Range unacceptable.",
 		}
 	case 420:
 		return nil, &TwitterError{
-			Id:  resp.StatusCode,
+			ID:  resp.StatusCode,
 			Msg: "Rate limited.",
 		}
 	default:
@@ -319,12 +340,12 @@ func (s *StreamClient) sendRequest(stream *TwitterApiUrl, formValues *url.Values
 	}
 }
 
+// Unmarshal a timestamp from Twitter
 func (tt *TwitterTime) UnmarshalJSON(b []byte) (err error) {
-	// Remove start and end quotes
-	tt.T, err = time.Parse(twitter_time_layout, string(b[1:len(b)-1]))
+	tt.T, err = time.Parse(twitterTimeLayout, string(b[1:len(b)-1]))
 	return
 }
 
 func (e TwitterError) Error() string {
-	return fmt.Sprintf("%s (%d)", e.Msg, e.Id)
+	return fmt.Sprintf("%s (%d)", e.Msg, e.ID)
 }
