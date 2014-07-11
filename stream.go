@@ -8,6 +8,7 @@ package streamingtwitter
 
 import (
 	"encoding/json"
+	"net"
 	"net/url"
 )
 
@@ -74,6 +75,9 @@ func (s *StreamClient) Stream(stream *TwitterAPIURL, formValues *url.Values) {
 		if err := decoder.Decode(&status); err != nil {
 			s.Errors <- err
 			if err.Error() == "EOF" {
+				return
+			}
+			if _, ok := err.(*net.OpError); ok {
 				return
 			}
 			continue
