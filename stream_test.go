@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/garyburd/go-oauth/oauth"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -263,5 +264,37 @@ func TestDecodingErrorContinues(t *testing.T) {
 			t.Error("Decoding error timeout")
 			return
 		}
+	}
+}
+
+// @todo fix: this test relies on resp.Body.Close() being called in Stream
+func TestNetworkErrorReturns(t *testing.T) {
+	closedChannel := make(chan struct{})
+	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
+		resp := &http.Response{
+			Body: CloseCalled{
+				bytes.NewBufferString("{\"x\": 1}"),
+				closedChannel,
+			},
+		}
+		return resp, &net.OpError{Err: errors.New("network error")}
+	}
+
+	testurl := &TwitterAPIURL{
+		AccessMethod:  "custom",
+		CustomHandler: handler,
+	}
+
+	client := NewClient()
+	go client.Stream(testurl, &url.Values{})
+	select {
+	case err := <-client.Errors:
+		if _, ok := err.(*net.OpError); !ok {
+			t.Error("Expecting error type &net.OpError")
+		}
+	case <-closedChannel:
+		return
+	case <-time.After(2 * time.Millisecond):
+		t.Error("Error not received on Errors channel")
 	}
 }

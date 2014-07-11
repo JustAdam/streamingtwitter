@@ -73,13 +73,14 @@ func (s *StreamClient) Stream(stream *TwitterAPIURL, formValues *url.Values) {
 		// @todo Handle fragmented JSON, (delimited)
 
 		if err := decoder.Decode(&status); err != nil {
+			if rerr, ok := err.(*net.OpError); ok {
+				s.Errors <- rerr
+				return
+			} else if err.Error() == "EOF" {
+				s.Errors <- err
+				return
+			}
 			s.Errors <- err
-			if err.Error() == "EOF" {
-				return
-			}
-			if _, ok := err.(*net.OpError); ok {
-				return
-			}
 			continue
 		}
 
