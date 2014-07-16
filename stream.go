@@ -79,6 +79,10 @@ func (s *StreamClient) Stream(stream *TwitterAPIURL, formValues *url.Values) {
 			} else if err.Error() == "EOF" {
 				s.Errors <- err
 				return
+			} else if err.Error() == "unexpected EOF" {
+				// Auto reconnection is currently left up to the client.
+				s.Errors <- err
+				return
 			}
 			s.Errors <- err
 			continue
