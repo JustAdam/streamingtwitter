@@ -40,12 +40,13 @@ func TestTweetCreation(t *testing.T) {
 
 	client := NewClient()
 	status := new(TwitterStatus)
-	go client.Stream(testurl, &url.Values{})
+  tweets := make(chan *TwitterStatus)
+	go client.Stream(tweets, testurl, &url.Values{})
 	select {
-	case status = <-client.Tweets:
+	case status = <-tweets:
 		break
 	case <-time.After(2 * time.Millisecond):
-		t.Fatal("Tweet data not receieve on Tweets channel")
+		t.Fatal("Tweet data not receieved")
 	}
 
 	testData := []JSONTestData{
@@ -180,7 +181,8 @@ func TestStreamSendsRequestError(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Stream(testurl, &url.Values{})
+  tweets := make(chan *TwitterStatus)
+	go client.Stream(tweets, testurl, &url.Values{})
 	select {
 	case err := <-client.Errors:
 		if err.Error() != "Test error" {
@@ -210,13 +212,14 @@ func TestStreamEOFClosesResp(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Stream(testurl, &url.Values{})
+  tweets := make(chan *TwitterStatus)
+	go client.Stream(tweets, testurl, &url.Values{})
 	timeout := time.After(5 * time.Millisecond)
 	errors := 0
 	for {
 		select {
 		// Receive tweet
-		case <-client.Tweets:
+		case <-tweets:
 			// Receive EOF
 		case <-client.Errors:
 			errors++
@@ -247,16 +250,17 @@ func TestDecodingErrorContinues(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Stream(testurl, &url.Values{})
+  tweets := make(chan *TwitterStatus)
+	go client.Stream(tweets, testurl, &url.Values{})
 	timeout := time.After(5 * time.Millisecond)
-	tweets := 0
+	recTweets := 0
 	for {
 		select {
-		case <-client.Tweets:
-			tweets++
+		case <-tweets:
+			recTweets++
 		case <-client.Errors:
 		case <-client.Finished:
-			if tweets != 2 {
+			if recTweets != 2 {
 				t.Error("Decoding error did not continue")
 			}
 			return
@@ -286,7 +290,8 @@ func TestNetworkErrorReturns(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Stream(testurl, &url.Values{})
+  tweets := make(chan *TwitterStatus)
+	go client.Stream(tweets, testurl, &url.Values{})
 	select {
 	case err := <-client.Errors:
 		if _, ok := err.(*net.OpError); !ok {

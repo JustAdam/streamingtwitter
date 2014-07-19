@@ -35,8 +35,6 @@ type StreamClient struct {
 
 	/* @todo Calling code should know which stream/request finishes or errors? */
 
-	// Tweets received from any open stream will be sent here.
-	Tweets chan *TwitterStatus
 	// Any received errors are sent here (Embedded API errors are currently not fully supported)
 	Errors chan error
 	// When a request has finished, this channel will receive data.
@@ -203,7 +201,6 @@ func NewClient() (client *StreamClient) {
 		TokenRequestURI:               "https://api.twitter.com/oauth/access_token",
 	}
 
-	client.Tweets = make(chan *TwitterStatus)
 	client.Errors = make(chan error)
 	client.Finished = make(chan struct{})
 	return

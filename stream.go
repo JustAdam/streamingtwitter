@@ -42,10 +42,11 @@ func init() {
 /*
  args := &url.Values{}
  args.Add("track", "Norway")
- go client.Stream(streamingtwitter.Streams["Filter"], args)
+ tweets := make(chan *streamingtwitter.TwitterStatus)
+ go client.Stream(tweets, streamingtwitter.Streams["Filter"], args)
  for {
  	select {
-		case status := <-client.Tweets:
+		case status := <-tweets:
 			fmt.Println(status)
 		case err := <-client.Errors:
 			fmt.Printf("ERROR: '%s'\n", err)
@@ -54,7 +55,7 @@ func init() {
 		}
 	}
 */
-func (s *StreamClient) Stream(stream *TwitterAPIURL, formValues *url.Values) {
+func (s *StreamClient) Stream(tweets chan<- *TwitterStatus, stream *TwitterAPIURL, formValues *url.Values) {
 	resp, err := s.sendRequest(stream, formValues)
 	if err != nil {
 		s.Errors <- err
@@ -80,7 +81,7 @@ func (s *StreamClient) Stream(stream *TwitterAPIURL, formValues *url.Values) {
 				s.Errors <- err
 				return
 			} else if err.Error() == "unexpected EOF" {
-				// Auto reconnection is currently left up to the client.
+				// Reconnection is left up to the client.
 				s.Errors <- err
 				return
 			}
@@ -88,7 +89,6 @@ func (s *StreamClient) Stream(stream *TwitterAPIURL, formValues *url.Values) {
 			continue
 		}
 
-		// Do we need to know which stream the tweet came from?
-		s.Tweets <- status
+		tweets <- status
 	}
 }
