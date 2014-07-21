@@ -15,7 +15,7 @@ import (
 /*
  args := &url.Values{}
  args.Add("screen_name", "TwitterName")
- data := []TwitterUser{}
+ data := []streamingtwitter.TwitterUser{}
  url := &TwitterApiUrl{
   AccessMethod: "get",
   Url:          "https://api.twitter.com/1.1/users/lookup.json",
