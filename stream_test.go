@@ -40,7 +40,7 @@ func TestTweetCreation(t *testing.T) {
 
 	client := NewClient()
 	status := new(TwitterStatus)
-  tweets := make(chan *TwitterStatus)
+	tweets := make(chan *TwitterStatus)
 	go client.Stream(tweets, testurl, &url.Values{})
 	select {
 	case status = <-tweets:
@@ -181,7 +181,7 @@ func TestStreamSendsRequestError(t *testing.T) {
 	}
 
 	client := NewClient()
-  tweets := make(chan *TwitterStatus)
+	tweets := make(chan *TwitterStatus)
 	go client.Stream(tweets, testurl, &url.Values{})
 	select {
 	case err := <-client.Errors:
@@ -212,7 +212,7 @@ func TestStreamEOFClosesResp(t *testing.T) {
 	}
 
 	client := NewClient()
-  tweets := make(chan *TwitterStatus)
+	tweets := make(chan *TwitterStatus)
 	go client.Stream(tweets, testurl, &url.Values{})
 	timeout := time.After(5 * time.Millisecond)
 	errors := 0
@@ -250,7 +250,7 @@ func TestDecodingErrorContinues(t *testing.T) {
 	}
 
 	client := NewClient()
-  tweets := make(chan *TwitterStatus)
+	tweets := make(chan *TwitterStatus)
 	go client.Stream(tweets, testurl, &url.Values{})
 	timeout := time.After(5 * time.Millisecond)
 	recTweets := 0
@@ -290,7 +290,7 @@ func TestNetworkErrorReturns(t *testing.T) {
 	}
 
 	client := NewClient()
-  tweets := make(chan *TwitterStatus)
+	tweets := make(chan *TwitterStatus)
 	go client.Stream(tweets, testurl, &url.Values{})
 	select {
 	case err := <-client.Errors:
