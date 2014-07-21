@@ -20,7 +20,7 @@ import (
   AccessMethod: "get",
   Url:          "https://api.twitter.com/1.1/users/lookup.json",
  }
- go client.Rest(url, args, &data)
+ go client.Rest(&data, url, args)
  select {
  case err := <-client.Errors:
 	log.Fatal(err)
@@ -28,7 +28,7 @@ import (
 	fmt.Printf("%+v", data)
  }
 */
-func (s *StreamClient) Rest(stream *TwitterAPIURL, formValues *url.Values, data interface{}) {
+func (s *StreamClient) Rest(data interface{}, stream *TwitterAPIURL, formValues *url.Values) {
 	resp, err := s.sendRequest(stream, formValues)
 	if err != nil {
 		s.Errors <- err

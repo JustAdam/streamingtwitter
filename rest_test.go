@@ -34,7 +34,7 @@ func TestUserLookupJsonDecode(t *testing.T) {
 
 	client := NewClient()
 	data := []TwitterUser{}
-	go client.Rest(testurl, &url.Values{}, &data)
+	go client.Rest(&data, testurl, &url.Values{})
 
 	select {
 	case <-client.Finished:
@@ -67,7 +67,7 @@ func TestRestSendsRequestError(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Rest(testurl, &url.Values{}, &struct{}{})
+	go client.Rest(&struct{}{}, testurl, &url.Values{})
 	select {
 	case err := <-client.Errors:
 		if err.Error() != "test error" {
@@ -94,7 +94,7 @@ func TestRestSendsDecodingError(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Rest(testurl, &url.Values{}, &struct{}{})
+	go client.Rest(&struct{}{}, testurl, &url.Values{})
 	select {
 	case err := <-client.Errors:
 		if err.Error() != "invalid character 'i' looking for beginning of object key string" {
@@ -120,7 +120,7 @@ func TestRestSendsFinishedNotification(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Rest(testurl, &url.Values{}, &struct{}{})
+	go client.Rest(&struct{}{}, testurl, &url.Values{})
 	select {
 	case <-client.Finished:
 		break
@@ -147,7 +147,7 @@ func TestRestClosesResp(t *testing.T) {
 	}
 
 	client := NewClient()
-	go client.Rest(testurl, &url.Values{}, &struct{}{})
+	go client.Rest(&struct{}{}, testurl, &url.Values{})
 	select {
 	case <-closedChannel:
 		break
