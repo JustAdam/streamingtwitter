@@ -114,11 +114,11 @@ type TwitterUser struct {
 	IsTranslationEnabled           bool                   `json:"is_translation_enabled"`
 	FollowRequestSent              bool                   `json:"follow_request_sent"`
 	ProfileBackgroundColor         string                 `json:"profile_background_color"`
-	ProfileBackgroundImageUrl      string                 `json:"profile_background_image_url"`
-	ProfileBackgroundImageUrlHttps string                 `json:"profile_background_image_url_https"`
+	ProfileBackgroundImageURL      string                 `json:"profile_background_image_url"`
+	ProfileBackgroundImageURLHttps string                 `json:"profile_background_image_url_https"`
 	ProfileBackgroundTile          bool                   `json:"profile_background_tile"`
-	ProfileImageUrl                string                 `json:"profile_image_url"`
-	ProfileImageUrlHttps           string                 `json:"profile_image_url_https"`
+	ProfileImageURL                string                 `json:"profile_image_url"`
+	ProfileImageURLHttps           string                 `json:"profile_image_url_https"`
 	ProfileLinkColor               string                 `json:"profile_link_color"`
 	ProfileSidebarBorderColor      string                 `json:"profile_sidebar_border_color"`
 	ProfileSidebarFillColor        string                 `json:"profile_sidebar_fill_color"`
@@ -192,7 +192,7 @@ type TweetUserMention struct {
 	Indices    []uint `json:"indices"`
 }
 
-// Create a new StreamClient.
+// NewClient creates a new StreamClient for access to the Twitter API (both stream & rest).
 func NewClient() (client *StreamClient) {
 	client = new(StreamClient)
 	client.oauthClient = &oauth.Client{
@@ -206,7 +206,8 @@ func NewClient() (client *StreamClient) {
 	return
 }
 
-// Authenicate the app, and user with Twitter using the oauth client.
+// Authenicate the app and user, with Twitter using the oauth client.
+// Your get your App token from Twitter.
 // Token information  for the app stored in the following JSON format:
 //  {
 //  "App":{

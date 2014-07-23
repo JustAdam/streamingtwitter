@@ -80,11 +80,11 @@ func TestTweetCreation(t *testing.T) {
 		{"User.IsTranslationEnabled", status.User.IsTranslationEnabled, false},
 		{"User.FollowRequestSent", status.User.FollowRequestSent, false},
 		{"User.ProfileBackgroundColor", status.User.ProfileBackgroundColor, "C0DEED"},
-		{"User.ProfileBackgroundImageUrl", status.User.ProfileBackgroundImageUrl, "http://abs.twimg.com/images/themes/theme1/bg.png"},
-		{"User.ProfileBackgroundImageUrlHttps", status.User.ProfileBackgroundImageUrlHttps, "https://abs.twimg.com/images/themes/theme1/bg.png"},
+		{"User.ProfileBackgroundImageURL", status.User.ProfileBackgroundImageURL, "http://abs.twimg.com/images/themes/theme1/bg.png"},
+		{"User.ProfileBackgroundImageURLHttps", status.User.ProfileBackgroundImageURLHttps, "https://abs.twimg.com/images/themes/theme1/bg.png"},
 		{"User.ProfileBackgroundTile", status.User.ProfileBackgroundTile, false},
-		{"User.ProfileImageUrl", status.User.ProfileImageUrl, "http://abs.twimg.com/sticky/default_profile_images/default_profile_2_normal.png"},
-		{"User.ProfileImageUrlHttps", status.User.ProfileImageUrlHttps, "https://abs.twimg.com/sticky/default_profile_images/default_profile_2_normal.png"},
+		{"User.ProfileImageURL", status.User.ProfileImageURL, "http://abs.twimg.com/sticky/default_profile_images/default_profile_2_normal.png"},
+		{"User.ProfileImageURLHttps", status.User.ProfileImageURLHttps, "https://abs.twimg.com/sticky/default_profile_images/default_profile_2_normal.png"},
 		{"User.ProfileLinkColor", status.User.ProfileLinkColor, "0084B4"},
 		{"User.ProfileSidebarBorderColor", status.User.ProfileSidebarBorderColor, "C0DEED"},
 		{"User.ProfileSidebarFillColor", status.User.ProfileSidebarFillColor, "DDEEF6"},
@@ -172,7 +172,7 @@ func TestDefaultStreamVariablesExist(t *testing.T) {
 
 func TestStreamSendsRequestError(t *testing.T) {
 	handler := func(*http.Client, *oauth.Credentials, string, url.Values) (*http.Response, error) {
-		return &http.Response{}, errors.New("Test error")
+		return &http.Response{}, errors.New("test error")
 	}
 
 	testurl := &TwitterAPIURL{
@@ -185,7 +185,7 @@ func TestStreamSendsRequestError(t *testing.T) {
 	go client.Stream(tweets, testurl, &url.Values{})
 	select {
 	case err := <-client.Errors:
-		if err.Error() != "Test error" {
+		if err.Error() != "test error" {
 			t.Errorf("Expecting error \"Test error\", got %v", err)
 		}
 		break
