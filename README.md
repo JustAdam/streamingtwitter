@@ -1,7 +1,7 @@
 Go: Twitter Streaming API
 =========================
 
-[![Build Status](https://travis-ci.org/JustAdam/streamingtwitter.svg?branch=master)](https://travis-ci.org/JustAdam/streamingtwitter) [![Coverage Status](https://coveralls.io/repos/JustAdam/streamingtwitter/badge.png)](https://coveralls.io/r/JustAdam/streamingtwitter)
+[![Build Status](https://travis-ci.org/JustAdam/streamingtwitter.svg?branch=master)](https://travis-ci.org/JustAdam/streamingtwitter) [![Coverage Status](https://coveralls.io/repos/JustAdam/streamingtwitter/badge.png)](https://coveralls.io/r/JustAdam/streamingtwitter) [![GoDoc](https://godoc.org/github.com/JustAdam/streamingtwitter?status.svg)](https://godoc.org/github.com/JustAdam/streamingtwitter)
 
 Go package to provide access to Twitter's streaming API.
 
