@@ -10,21 +10,11 @@ import (
 	"testing"
 )
 
-func TestAuthenticateMissingAppDataError(t *testing.T) {
-	client := NewClient()
-
-	file := "test_data/tokens.json"
-	err := client.Authenticate(&file)
-	if err.Error() != "missing App token" {
-		t.Errorf("Expecting error \"Missing App token\", got %v", err)
-	}
-}
-
 func TestAuthenticateMissingAppTokenSecretError(t *testing.T) {
 	client := NewClient()
 
-	file := "test_data/tokens_empty.json"
-	err := client.Authenticate(&file)
+	tokens := &ClientTokens{App: &oauth.Credentials{}, User: &oauth.Credentials{}}
+	_, err := client.Authenticate(tokens)
 	if err.Error() != "missing app's Token or Secret" {
 		t.Errorf("Expecting error \"Missing app's Token or Secret\", got %v", err)
 	}
@@ -33,8 +23,17 @@ func TestAuthenticateMissingAppTokenSecretError(t *testing.T) {
 func TestAuthenticateAccessTokenIsSetInFile(t *testing.T) {
 	client := NewClient()
 
-	file := "test_data/tokens_full.json"
-	client.Authenticate(&file)
+	tokens := &ClientTokens{
+		App: &oauth.Credentials{
+			Token:  "app-token",
+			Secret: "app-secret",
+		},
+		User: &oauth.Credentials{
+			Token:  "user-token",
+			Secret: "user-secret",
+		},
+	}
+	client.Authenticate(tokens)
 	if client.token.Token != "user-token" || client.token.Secret != "user-secret" {
 		t.Errorf("Client access token not set.")
 	}

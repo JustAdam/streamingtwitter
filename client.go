@@ -6,20 +6,13 @@
 package streamingtwitter
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/garyburd/go-oauth/oauth"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
-)
-
-var (
-	// File permissions for the token file.
-	tokenFilePermission = os.FileMode(0600)
 )
 
 const (
@@ -39,6 +32,14 @@ type StreamClient struct {
 	Errors chan error
 	// When a request has finished, this channel will receive data.
 	Finished chan struct{}
+}
+
+// ClientTokens provide the relevant tokens the client needs to access Twitter.
+type ClientTokens struct {
+	// Token for the actual application
+	App *oauth.Credentials
+	// Token for the user of the application
+	User *oauth.Credentials
 }
 
 // A TwitterAPIURL provides details on how to access Twitter API URLs.
@@ -207,43 +208,21 @@ func NewClient() (client *StreamClient) {
 }
 
 // Authenicate the app and user, with Twitter using the oauth client.
-// Your get your App token from Twitter.
-// Token information  for the app stored in the following JSON format:
-//  {
-//  "App":{
-//    "Token":"YOUR APP TOKEN HERE",
-//    "Secret":"APP SECRET HERE"
-//    }
-//  }
-func (s *StreamClient) Authenticate(tokenFile *string) error {
-
-	cf, err := ioutil.ReadFile(*tokenFile)
-	if err != nil {
-		return err
-	}
-
-	credentials := make(map[string]*oauth.Credentials)
-
-	if err := json.Unmarshal(cf, &credentials); err != nil {
-		return err
-	}
-
-	app, ok := credentials["App"]
-	if ok != true {
-		return errors.New("missing App token")
-	}
-	s.oauthClient.Credentials = *app
+// You get a token for your App from Twitter.  The user's token will be requested
+// and returned if it is not supplied.
+func (s *StreamClient) Authenticate(tokens *ClientTokens) (*oauth.Credentials, error) {
+	s.oauthClient.Credentials = *tokens.App
 	if s.oauthClient.Credentials.Token == "" || s.oauthClient.Credentials.Secret == "" {
-		return errors.New("missing app's Token or Secret")
+		return nil, errors.New("missing app's Token or Secret")
 	}
 
 	// Check for token information from the user (they need to grant your app access for feed access)
-	token, ok := credentials["User"]
-	if ok != true {
+	token := tokens.User
+	if token.Token == "" || token.Secret == "" {
 
 		tempCredentials, err := s.oauthClient.RequestTemporaryCredentials(http.DefaultClient, "oob", nil)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		url := s.oauthClient.AuthorizationURL(tempCredentials, nil)
@@ -254,26 +233,15 @@ func (s *StreamClient) Authenticate(tokenFile *string) error {
 
 		token, _, err := s.oauthClient.RequestToken(http.DefaultClient, tempCredentials, authCode)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		// Save the user's token information
-		credentials["User"] = token
-		save, err := json.Marshal(credentials)
-		if err != nil {
-			return err
-		}
-
-		if err := ioutil.WriteFile(*tokenFile, save, tokenFilePermission); err != nil {
-			return err
-		}
-
-		fmt.Fprintf(os.Stdout, "Auth token saved\n")
+		s.token = token
+		return token, nil
 	}
 
 	s.token = token
-
-	return nil
+	return nil, nil
 }
 
 // Send a request to Twitter.
