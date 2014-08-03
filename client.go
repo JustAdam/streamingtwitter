@@ -211,15 +211,22 @@ func NewClient() (client *StreamClient) {
 // You get a token for your App from Twitter.  The user's token will be requested
 // and returned if it is not supplied.
 func (s *StreamClient) Authenticate(tokens *ClientTokens) (*oauth.Credentials, error) {
+	if tokens.App == nil {
+		return nil, errors.New("missing App token")
+	}
 	s.oauthClient.Credentials = *tokens.App
 	if s.oauthClient.Credentials.Token == "" || s.oauthClient.Credentials.Secret == "" {
 		return nil, errors.New("missing app's Token or Secret")
 	}
 
 	// Check for token information from the user (they need to grant your app access for feed access)
-	token := tokens.User
+	var token *oauth.Credentials
+	if tokens.User == nil {
+		token = &oauth.Credentials{}
+	} else {
+		token = tokens.User
+	}
 	if token.Token == "" || token.Secret == "" {
-
 		tempCredentials, err := s.oauthClient.RequestTemporaryCredentials(http.DefaultClient, "oob", nil)
 		if err != nil {
 			return nil, err

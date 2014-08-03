@@ -10,6 +10,16 @@ import (
 	"testing"
 )
 
+func TestAuthenticateMissingAppDataError(t *testing.T) {
+	client := NewClient()
+
+	tokens := &ClientTokens{}
+	_, err := client.Authenticate(tokens)
+	if err.Error() != "missing App token" {
+		t.Errorf("Expecting error \"Missing App token\", got %v", err)
+	}
+}
+
 func TestAuthenticateMissingAppTokenSecretError(t *testing.T) {
 	client := NewClient()
 
