@@ -21,6 +21,42 @@ func TestTwitterErrorOutput(t *testing.T) {
 	}
 }
 
+func TestAuthenticateSetsAccessToken(t *testing.T) {
+	client := NewClient()
+
+	_ = client.Authenticate(&ClientTokens{
+		TokenFile: "test_data/tokens-empty.json",
+		App: &oauth.Credentials{
+			Token:  "app-token",
+			Secret: "app-secret",
+		},
+		User: &oauth.Credentials{
+			Token:  "user-token",
+			Secret: "user-secret",
+		},
+	})
+
+	if client.token.Token != "user-token" && client.token.Secret != "user-secret" {
+		t.Errorf("Expecting client.token (.Token = user-token) (.Secret = user-secret), got (.Token = %v) (.Secret = %v)", client.token.Token, client.token.Secret)
+	}
+}
+
+func TestAuthenticateError(t *testing.T) {
+	client := NewClient()
+
+	err := client.Authenticate(&ClientTokens{
+		TokenFile: "test_data/tokens-empty.json",
+		User: &oauth.Credentials{
+			Token:  "user-token",
+			Secret: "user-secret",
+		},
+	})
+
+	if _, ok := err.(*ClientTokensError); !ok {
+		t.Errorf("Expecting ClientTokensError got %v", reflect.TypeOf(err))
+	}
+}
+
 func TestSendResponseErrorOutput(t *testing.T) {
 	client := NewClient()
 	errorCodes := []int{401, 403, 404, 406, 413, 416, 420}
