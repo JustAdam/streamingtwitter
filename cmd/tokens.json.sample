@@ -1,0 +1,6 @@
+{
+  "App":{
+    "Token":"YOUR APP TOKEN HERE",
+    "Secret":"APP SECRET HERE"
+  }
+}

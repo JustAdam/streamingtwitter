@@ -7,4 +7,5 @@ Go package to provide access to Twitter's streaming and REST API.
 
 This is a early version which is no doubt missing lots of functionality (and tests), so just open an issue and/or help out :)
 
-See [streamingapi-client](https://github.com/JustAdam/streamingtwitter-client) for some example clients.
+
+Example clients and how to use the code can be found in the *cmd/* directory.
