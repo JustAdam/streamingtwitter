@@ -10,45 +10,6 @@ import (
 	"testing"
 )
 
-func TestAuthenticateMissingAppDataError(t *testing.T) {
-	client := NewClient()
-
-	tokens := &ClientTokens{}
-	_, err := client.Authenticate(tokens)
-	if err.Error() != "missing App token" {
-		t.Errorf("Expecting error \"Missing App token\", got %v", err)
-	}
-}
-
-func TestAuthenticateMissingAppTokenSecretError(t *testing.T) {
-	client := NewClient()
-
-	tokens := &ClientTokens{App: &oauth.Credentials{}, User: &oauth.Credentials{}}
-	_, err := client.Authenticate(tokens)
-	if err.Error() != "missing app's Token or Secret" {
-		t.Errorf("Expecting error \"Missing app's Token or Secret\", got %v", err)
-	}
-}
-
-func TestAuthenticateAccessTokenIsSetInFile(t *testing.T) {
-	client := NewClient()
-
-	tokens := &ClientTokens{
-		App: &oauth.Credentials{
-			Token:  "app-token",
-			Secret: "app-secret",
-		},
-		User: &oauth.Credentials{
-			Token:  "user-token",
-			Secret: "user-secret",
-		},
-	}
-	client.Authenticate(tokens)
-	if client.token.Token != "user-token" || client.token.Secret != "user-secret" {
-		t.Errorf("Client access token not set.")
-	}
-}
-
 func TestTwitterErrorOutput(t *testing.T) {
 	err := &TwitterError{
 		ID:  101,

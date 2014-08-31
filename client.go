@@ -6,12 +6,10 @@
 package streamingtwitter
 
 import (
-	"errors"
 	"fmt"
 	"github.com/garyburd/go-oauth/oauth"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 )
 
@@ -32,14 +30,6 @@ type StreamClient struct {
 	Errors chan error
 	// When a request has finished, this channel will receive data.
 	Finished chan struct{}
-}
-
-// ClientTokens provide the relevant tokens the client needs to access Twitter.
-type ClientTokens struct {
-	// Token for the actual application
-	App *oauth.Credentials
-	// Token for the user of the application
-	User *oauth.Credentials
 }
 
 // A TwitterAPIURL provides details on how to access Twitter API URLs.
@@ -201,54 +191,15 @@ func NewClient() (client *StreamClient) {
 		ResourceOwnerAuthorizationURI: "https://api.twitter.com/oauth/authorize",
 		TokenRequestURI:               "https://api.twitter.com/oauth/access_token",
 	}
-
 	client.Errors = make(chan error)
 	client.Finished = make(chan struct{})
 	return
 }
 
 // Authenicate the app and user, with Twitter using the oauth client.
-// You get a token for your App from Twitter.  The user's token will be requested
-// and returned if it is not supplied.
-func (s *StreamClient) Authenticate(tokens *ClientTokens) (*oauth.Credentials, error) {
-	if tokens.App == nil {
-		return nil, errors.New("missing App token")
-	}
-	s.oauthClient.Credentials = *tokens.App
-	if s.oauthClient.Credentials.Token == "" || s.oauthClient.Credentials.Secret == "" {
-		return nil, errors.New("missing app's Token or Secret")
-	}
-
-	// Check for token information from the user (they need to grant your app access for feed access)
-	var token *oauth.Credentials
-	if tokens.User == nil {
-		token = &oauth.Credentials{}
-	} else {
-		token = tokens.User
-	}
-	if token.Token == "" || token.Secret == "" {
-		tempCredentials, err := s.oauthClient.RequestTemporaryCredentials(http.DefaultClient, "oob", nil)
-		if err != nil {
-			return nil, err
-		}
-
-		url := s.oauthClient.AuthorizationURL(tempCredentials, nil)
-		fmt.Fprintf(os.Stdout, "Before we can continue ...\nGo to:\n\n\t%s\n\nAuthorize the application and enter in the verification code: ", url)
-
-		var authCode string
-		fmt.Scanln(&authCode)
-
-		token, _, err := s.oauthClient.RequestToken(http.DefaultClient, tempCredentials, authCode)
-		if err != nil {
-			return nil, err
-		}
-
-		s.token = token
-		return token, nil
-	}
-
-	s.token = token
-	return nil, nil
+func (s *StreamClient) Authenticate(t Tokener) (err error) {
+	s.token, err = t.Token(s.oauthClient)
+	return
 }
 
 // Send a request to Twitter.
