@@ -14,14 +14,14 @@ Example clients and how to use the code can be found in the `cmd/` directory.
 Quick start
 -----------
 
-  $ go get github.com/JustAdam/streamingtwitter
+ 	$ go get github.com/JustAdam/streamingtwitter
 
-  $ cd cmd/
+	$ cd cmd/
 
-  $ mv tokens.json.sample tokens.json
+	$ mv tokens.json.sample tokens.json
 
-  $ vim tokens.json
-    Add your Twitter API token and secret under "App".
+	$ vim tokens.json
+		Add your Twitter API token and secret under "App".
 
-  $ go run simple/simple.go
-    Follow the instructions to grant access to your Twitter app
+	$ go run simple/simple.go
+		Follow the instructions to grant access to your Twitter app
