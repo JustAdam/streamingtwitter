@@ -183,6 +183,12 @@ type TweetUserMention struct {
 	Indices    []uint `json:"indices"`
 }
 
+type Tokener interface {
+	// Token returns a valid user access token to provide access to Twitter.
+	// This method also needs to set the app token so valid requests can be made.
+	Token(*oauth.Client) (*oauth.Credentials, error)
+}
+
 // NewClient creates a new StreamClient for access to the Twitter API (both stream & rest).
 func NewClient() (client *StreamClient) {
 	client = new(StreamClient)

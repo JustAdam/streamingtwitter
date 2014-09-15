@@ -14,12 +14,6 @@ var (
 	tokenFilePermission = os.FileMode(0600)
 )
 
-type Tokener interface {
-	// Token returns a valid user access token to provide access to Twitter.
-	// This method also needs to set the app token so valid requests can be made.
-	Token(*oauth.Client) (*oauth.Credentials, error)
-}
-
 type ClientTokens struct {
 	// Location to our token storage file (JSON format)
 	TokenFile string `json:"-"`
